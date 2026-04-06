@@ -1,66 +1,37 @@
 const express = require("express");
-const ytdlp = require("yt-dlp-exec");
-const fs = require("fs");
-const path = require("path");
-
 const app = express();
-app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
 
-// carpeta downloads
-const DOWNLOADS = path.join(__dirname, "downloads");
-
-if (!fs.existsSync(DOWNLOADS)) {
-  fs.mkdirSync(DOWNLOADS);
-}
-
-// ruta test
 app.get("/", (req, res) => {
   res.send("🔥 Backend activo");
 });
 
-// convertir TikTok → MP4
-app.post("/convert", async (req, res) => {
-  const { url } = req.body;
+app.get("/download", async (req, res) => {
+  const url = req.query.url;
 
-  if (!url || !url.includes("tiktok.com")) {
-    return res.json({ error: "URL inválida" });
+  if (!url) {
+    return res.status(400).json({ error: "URL faltante" });
   }
 
-  const id = Date.now();
-  const output = path.join(DOWNLOADS, `${id}.mp4`);
-
   try {
-    await ytdlp(url, {
-      output: output,
-      format: "mp4"
-    });
+    const response = await fetch(`https://tikwm.com/api/?url=${url}`);
+    const data = await response.json();
+
+    if (!data.data) {
+      return res.status(500).json({ error: "No se pudo obtener el video" });
+    }
 
     res.json({
-      download: `/downloads/${id}.mp4`
+      video: data.data.play,
+      mp3: data.data.music
     });
 
-  } catch (e) {
-    console.log("Error:", e);
-    res.json({ error: true });
+  } catch (err) {
+    res.status(500).json({ error: "Error del servidor" });
   }
 });
 
-// servir archivos
-app.use("/downloads", express.static(DOWNLOADS));
-
-// limpiar archivos cada 10 min
-setInterval(() => {
-  fs.readdir(DOWNLOADS, (err, files) => {
-    if (err) return;
-    files.forEach(file => {
-      fs.unlink(path.join(DOWNLOADS, file), () => {});
-    });
-  });
-}, 10 * 60 * 1000);
-
-// iniciar servidor
 app.listen(PORT, () => {
-  console.log("🔥 Server corriendo en puerto " + PORT);
+  console.log("Servidor corriendo");
 });
