@@ -1,5 +1,4 @@
 const express = require("express");
-const fetch = require("node-fetch");
 
 const app = express();
 const PORT = process.env.PORT || 10000;
@@ -24,10 +23,11 @@ app.get("/download", async (req, res) => {
       url = redirect.url;
     }
 
+    // 🔥 API externa
     const response = await fetch(`https://www.tikwm.com/api/?url=${encodeURIComponent(url)}`);
     const data = await response.json();
 
-    console.log("DATA:", data); // 👈 DEBUG
+    console.log("DATA:", data);
 
     if (!data || !data.data || !data.data.play) {
       return res.status(500).json({ error: "API falló" });
@@ -40,23 +40,7 @@ app.get("/download", async (req, res) => {
 
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Error del servidor" });
-  }
-});
-    // 🎬 Video sin marca
-    const video = data.data.play;
-
-    // 🎵 Audio
-    const mp3 = data.data.music;
-
-    return res.json({
-      video: video,
-      mp3: mp3
-    });
-
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Error del servidor" });
+    return res.status(500).json({ error: "Error del servidor" });
   }
 });
 
