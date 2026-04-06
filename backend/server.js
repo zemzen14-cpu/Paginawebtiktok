@@ -40,12 +40,7 @@ app.post("/convert", (req, res) => {
 
   let command = "";
 
-  if (type === "mp3") {
-    command = `yt-dlp -x --audio-format mp3 --no-playlist -o "${output}" "${url}"`;
-  } else {
-    command = `yt-dlp -f mp4 --no-playlist -o "${output}" "${url}"`;
-  }
-
+  const command = `yt-dlp -f mp4 --no-playlist -o "${output}" "${url}"`;
   console.log("Ejecutando:", command);
 
   exec(command, (err) => {
