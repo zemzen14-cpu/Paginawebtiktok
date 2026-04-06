@@ -6,6 +6,7 @@ const path = require("path");
 const app = express();
 app.use(express.json());
 
+// 🔥 Puerto dinámico para Render
 const PORT = process.env.PORT || 3000;
 
 // 📁 Carpeta de descargas
@@ -16,7 +17,42 @@ if (!fs.existsSync(DOWNLOADS)) {
   fs.mkdirSync(DOWNLOADS);
 }
 
-// 🧹 Limpieza automática cada 10 minutos
+// 🟢 Ruta base (para probar si funciona)
+app.get("/", (req, res) => {
+  res.send("🔥 Backend activo");
+});
+
+// 🚀 Convertidor (SOLO MP4)
+app.post("/convert", (req, res) => {
+  const { url } = req.body;
+
+  if (!url || !url.includes("tiktok.com")) {
+    return res.json({ error: "URL inválida" });
+  }
+
+  const id = Date.now();
+  const output = path.join(DOWNLOADS, `${id}.mp4`);
+
+  const command = `yt-dlp -f mp4 --no-playlist -o "${output}" "${url}"`;
+
+  console.log("Ejecutando:", command);
+
+  exec(command, (err) => {
+    if (err) {
+      console.log("Error:", err);
+      return res.json({ error: true });
+    }
+
+    res.json({
+      download: `/downloads/${id}.mp4`
+    });
+  });
+});
+
+// 📥 Servir archivos
+app.use("/downloads", express.static(DOWNLOADS));
+
+// 🧹 Limpieza cada 10 min
 setInterval(() => {
   fs.readdir(DOWNLOADS, (err, files) => {
     if (err) return;
@@ -26,47 +62,7 @@ setInterval(() => {
   });
 }, 10 * 60 * 1000);
 
-// 🚀 Endpoint principal
-app.post("/convert", (req, res) => {
-  const { url, type } = req.body;
-
-  // Validación básica
-  if (!url || !url.includes("tiktok.com")) {
-    return res.json({ error: "URL inválida" });
-  }
-
-  const id = Date.now();
-  const output = path.join(DOWNLOADS, `${id}.%(ext)s`);
-
-  let command = "";
-
-  const command = `yt-dlp -f mp4 --no-playlist -o "${output}" "${url}"`;
-  console.log("Ejecutando:", command);
-
-  exec(command, (err) => {
-    if (err) {
-      console.log("Error:", err);
-      return res.json({ error: true });
-    }
-
-    // Buscar archivo generado
-    const files = fs.readdirSync(DOWNLOADS);
-    const found = files.find(f => f.startsWith(id));
-
-    if (!found) {
-      return res.json({ error: true });
-    }
-
-    res.json({
-      download: `/downloads/${found}`
-    });
-  });
-});
-
-// 📥 Servir archivos descargados
-app.use("/downloads", express.static(DOWNLOADS));
-
-// 🟢 Iniciar servidor
+// 🚀 Iniciar servidor
 app.listen(PORT, () => {
-  console.log(`🔥 Server corriendo en puerto ${PORT}`);
+  console.log("🔥 Server corriendo en puerto " + PORT);
 });
