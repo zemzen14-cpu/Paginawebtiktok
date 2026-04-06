@@ -1,29 +1,27 @@
 const express = require("express");
-const { exec } = require("child_process");
+const ytdlp = require("yt-dlp-exec");
 const fs = require("fs");
 const path = require("path");
 
 const app = express();
 app.use(express.json());
 
-// 🔥 Puerto dinámico para Render
 const PORT = process.env.PORT || 3000;
 
-// 📁 Carpeta de descargas
+// carpeta downloads
 const DOWNLOADS = path.join(__dirname, "downloads");
 
-// Crear carpeta si no existe
 if (!fs.existsSync(DOWNLOADS)) {
   fs.mkdirSync(DOWNLOADS);
 }
 
-// 🟢 Ruta base (para probar si funciona)
+// ruta test
 app.get("/", (req, res) => {
   res.send("🔥 Backend activo");
 });
 
-// 🚀 Convertidor (SOLO MP4)
-app.post("/convert", (req, res) => {
+// convertir TikTok → MP4
+app.post("/convert", async (req, res) => {
   const { url } = req.body;
 
   if (!url || !url.includes("tiktok.com")) {
@@ -33,26 +31,26 @@ app.post("/convert", (req, res) => {
   const id = Date.now();
   const output = path.join(DOWNLOADS, `${id}.mp4`);
 
-  const command = `yt-dlp -f mp4 --no-playlist -o "${output}" "${url}"`;
-
-  console.log("Ejecutando:", command);
-
-  exec(command, (err) => {
-    if (err) {
-      console.log("Error:", err);
-      return res.json({ error: true });
-    }
+  try {
+    await ytdlp(url, {
+      output: output,
+      format: "mp4"
+    });
 
     res.json({
       download: `/downloads/${id}.mp4`
     });
-  });
+
+  } catch (e) {
+    console.log("Error:", e);
+    res.json({ error: true });
+  }
 });
 
-// 📥 Servir archivos
+// servir archivos
 app.use("/downloads", express.static(DOWNLOADS));
 
-// 🧹 Limpieza cada 10 min
+// limpiar archivos cada 10 min
 setInterval(() => {
   fs.readdir(DOWNLOADS, (err, files) => {
     if (err) return;
@@ -62,7 +60,7 @@ setInterval(() => {
   });
 }, 10 * 60 * 1000);
 
-// 🚀 Iniciar servidor
+// iniciar servidor
 app.listen(PORT, () => {
   console.log("🔥 Server corriendo en puerto " + PORT);
 });
