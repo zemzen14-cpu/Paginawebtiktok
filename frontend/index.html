@@ -6,25 +6,36 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div style="text-align:center;">
-  <img src="assets/logo.png" width="120">
-</div>
 
 <div class="app">
-  <h1>⚡ TikTok Downloader</h1>
-  <p>Sin marca de agua • Rápido • Gratis</p>
 
-  <input id="url" placeholder="Pega link de TikTok">
-
-  <div class="buttons">
-    
-    <button onclick="convert('mp4')">🎬 Descargar Video</button>
+  <!-- LOGO -->
+  <div style="text-align:center;">
+    <img src="assets/logo.png" width="120">
   </div>
 
+  <!-- TÍTULO -->
+  <h1>⚡ TikTok Downloader</h1>
+  <p>Descarga videos y música sin marca de agua</p>
+
+  <!-- INPUT -->
+  <input id="url" placeholder="Pega link de TikTok">
+
+  <!-- BOTONES -->
+  <div class="buttons">
+    <button onclick="convert('video')">🎬 Descargar Video</button>
+    <button onclick="convert('mp3')">🎵 Descargar MP3</button>
+  </div>
+
+  <!-- LOADER -->
   <div id="loader" class="loader hidden"></div>
+
+  <!-- ESTADO -->
   <p id="status"></p>
+
 </div>
 
 <script src="script.js"></script>
+
 </body>
 </html>
