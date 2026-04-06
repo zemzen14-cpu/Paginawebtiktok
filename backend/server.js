@@ -1,63 +1,46 @@
 const express = require("express");
-const ytdlp = require("yt-dlp-exec");
-
 const app = express();
-const PORT = process.env.PORT || 3000;
 
-// 🟢 Ruta base
+const PORT = process.env.PORT || 10000;
+
+// Permitir frontend
+app.use(express.static("public"));
+
+// Ruta básica
 app.get("/", (req, res) => {
   res.send("🔥 Backend activo");
 });
 
-// 🚀 Ruta download
+// 🔥 DOWNLOAD (AQUÍ VA)
 app.get("/download", async (req, res) => {
   const url = req.query.url;
   const type = req.query.type || "video";
 
   if (!url) {
-    return res.status(400).send("URL faltante");
+    return res.status(400).json({ error: "URL faltante" });
   }
 
   try {
-    const info = await ytdlp(url, {
-      dumpSingleJson: true,
-      noWarnings: true
-    });
+    const response = await fetch(`https://www.tikwm.com/api/?url=${encodeURIComponent(url)}`);
+    const data = await response.json();
 
-    if (!info || !info.formats) {
-      return res.status(500).send("No se pudo obtener info");
+    if (!data || !data.data) {
+      return res.status(500).json({ error: "API falló" });
     }
 
-    let file;
-
-    // 🎬 VIDEO
-    if (type === "video") {
-      file = info.formats
-        .filter(f => f.ext === "mp4" && f.url)
-        .sort((a, b) => b.height - a.height)[0];
-    }
-
-    // 🎵 AUDIO (MP3 / M4A)
     if (type === "mp3") {
-      file = info.formats
-        .filter(f => (f.ext === "m4a" || f.ext === "mp3") && f.url)
-        .sort((a, b) => (b.abr || 0) - (a.abr || 0))[0];
+      return res.json({ url: data.data.music });
     }
 
-    if (!file) {
-      return res.status(500).send("No se encontró archivo");
-    }
-
-    // 🔥 REDIRECCIÓN DIRECTA (MEJOR PARA RENDER)
-    return res.redirect(file.url);
+    return res.json({ url: data.data.play });
 
   } catch (err) {
     console.error(err);
-    res.status(500).send("Error del servidor");
+    res.status(500).json({ error: "Error del servidor" });
   }
 });
 
-// 🚀 Iniciar servidor
+// 🚀 iniciar servidor
 app.listen(PORT, () => {
   console.log("Servidor corriendo en puerto " + PORT);
 });
