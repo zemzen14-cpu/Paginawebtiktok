@@ -1,34 +1,33 @@
-const API = "https://paginawebtiktok.onrender.com";
-
-window.location.href = `${API}/download?url=${encodeURIComponent(url)}&type=${type}`;
+const API = "https://ebtiktok.onrender.com"; // 👈 TU BACKEND REAL
 
 async function convert(type) {
   const url = document.getElementById("url").value;
   const status = document.getElementById("status");
   const loader = document.getElementById("loader");
 
-  if (!url.includes("tiktok.com")) {
-    status.innerText = "⚠️ Link inválido";
+  if (!url) {
+    status.innerText = "⚠️ Pega un link primero";
     return;
   }
 
   loader.classList.remove("hidden");
-  status.innerText = "";
+  status.innerText = "⏳ Procesando...";
 
   try {
-    const res = await fetch(`${API}/download?url=${encodeURIComponent(url)}&type=${type}`);
+    const res = await fetch(`${API}/download?url=${encodeURIComponent(url)}`);
     const data = await res.json();
 
     if (!data.url) {
-      status.innerText = "🔥 Error del servidor";
-      return;
+      throw new Error("No se encontró video");
     }
 
-    // 🔥 descarga directa
-    window.open(data.url, "_blank");
+    // 🔥 REDIRECCIÓN DIRECTA (DESCARGA)
+    window.location.href = data.url;
 
-    status.innerText = "✅ Descarga lista";
+    status.innerText = "✅ Descargando...";
+
   } catch (err) {
+    console.error(err);
     status.innerText = "🔥 Error del servidor";
   }
 
