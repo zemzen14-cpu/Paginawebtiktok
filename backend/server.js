@@ -1,8 +1,19 @@
-
+const express = require("express");
 const ytdlp = require("yt-dlp-exec");
 
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// 🔥 fetch para Node
 const fetch = (...args) =>
   import("node-fetch").then(({ default: fetch }) => fetch(...args));
+
+// 🟢 Ruta base
+app.get("/", (req, res) => {
+  res.send("🔥 Backend activo");
+});
+
+// 🚀 Ruta download
 app.get("/download", async (req, res) => {
   const url = req.query.url;
   const type = req.query.type || "video";
@@ -16,6 +27,10 @@ app.get("/download", async (req, res) => {
       dumpSingleJson: true,
       noWarnings: true
     });
+
+    if (!info || !info.formats) {
+      return res.status(500).send("No se pudo obtener info");
+    }
 
     let file;
 
@@ -37,13 +52,13 @@ app.get("/download", async (req, res) => {
       return res.status(500).send("No se encontró archivo");
     }
 
-    // 🔥 FORZAR DESCARGA
+    // 🔥 Forzar descarga
     res.setHeader(
       "Content-Disposition",
       `attachment; filename="tiktok.${type === "video" ? "mp4" : "mp3"}"`
     );
 
-    // 🔥 ENVIAR ARCHIVO
+    // 🔥 Descargar y enviar
     const response = await fetch(file.url);
     response.body.pipe(res);
 
@@ -51,4 +66,9 @@ app.get("/download", async (req, res) => {
     console.error(err);
     res.status(500).send("Error del servidor");
   }
+});
+
+// 🚀 Iniciar servidor
+app.listen(PORT, () => {
+  console.log("Servidor corriendo en puerto " + PORT);
 });

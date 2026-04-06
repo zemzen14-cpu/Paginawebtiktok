@@ -1,4 +1,6 @@
-const API = "https://TU-BACKEND.onrender.com";
+const API = "https://paginawebtiktok-1.onrender.com";
+
+window.location.href = `${API}/download?url=${encodeURIComponent(url)}&type=${type}`;
 
 async function convert(type) {
   const url = document.getElementById("url").value;
