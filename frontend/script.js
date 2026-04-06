@@ -1,4 +1,4 @@
-const API = "https://paginawebtiktok-1.onrender.com";
+const API = "https://paginawebtiktok.onrender.com";
 
 window.location.href = `${API}/download?url=${encodeURIComponent(url)}&type=${type}`;
 

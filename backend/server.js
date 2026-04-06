@@ -4,10 +4,6 @@ const ytdlp = require("yt-dlp-exec");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// 🔥 fetch para Node
-const fetch = (...args) =>
-  import("node-fetch").then(({ default: fetch }) => fetch(...args));
-
 // 🟢 Ruta base
 app.get("/", (req, res) => {
   res.send("🔥 Backend activo");
@@ -41,7 +37,7 @@ app.get("/download", async (req, res) => {
         .sort((a, b) => b.height - a.height)[0];
     }
 
-    // 🎵 AUDIO
+    // 🎵 AUDIO (MP3 / M4A)
     if (type === "mp3") {
       file = info.formats
         .filter(f => (f.ext === "m4a" || f.ext === "mp3") && f.url)
@@ -52,15 +48,8 @@ app.get("/download", async (req, res) => {
       return res.status(500).send("No se encontró archivo");
     }
 
-    // 🔥 Forzar descarga
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename="tiktok.${type === "video" ? "mp4" : "mp3"}"`
-    );
-
-    // 🔥 Descargar y enviar
-    const response = await fetch(file.url);
-    response.body.pipe(res);
+    // 🔥 REDIRECCIÓN DIRECTA (MEJOR PARA RENDER)
+    return res.redirect(file.url);
 
   } catch (err) {
     console.error(err);
